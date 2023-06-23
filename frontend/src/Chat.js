@@ -13,12 +13,12 @@ const Chat=({socket})=>{
   },[])
   
   const sendchat=()=>{  
-          socket.emit('new-user',{namee,message});
+          socket.emit('new-message',{namee,message});
           setmessage("");
   }
   
   useEffect(()=>{
-    socket.on('new-user',chats=>{
+    socket.on('new-message',chats=>{
     setchat([...chat,chats])
     })
     console.log(chat)
