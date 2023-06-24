@@ -1,47 +1,71 @@
-const app=require('express')()
-require('dotenv').config()
-const server=require('http').createServer(app);
-const io=require('socket.io')(server,{
-    cors:{
-        origin:"*"
-    }
-})
+const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
 const { ExpressPeerServer } = require('peer');
+
+const app = express();
+const server = http.createServer(app);
+const io =  socketIO(server, {
+  cors: {
+    origin: "https:localhost:3000",
+    allowedHeaders: ["my-custom-header"],
+    credentials: true,
+
+  }
+});
 const peerServer = ExpressPeerServer(server, {
   debug: true
 });
-const { v4: uuidV4 } = require('uuid')
+
+// app.use((req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+//   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+//   next();
+// });
+app.use(express.static('../frontend/public'))
+
 app.use('/peerjs', peerServer);
+
 app.get('/:room', (req, res) => {
-    res.render('room', { roomId: req.params.room })
-  })
+  const roomId = req.params.room;
+  res.send(`Room ID: ${roomId}`);
+});
 
-io.on('connection',socket=>{
-    admins={}
-    socket.on('create-room',(userId,roomId)=>{
-        socket.join(roomId)
-        admins[roomId]=userId
-        console.log(`new room - ${roomId}`)
-    })
-    socket.on('join-request',(userId,roomId)=>{
-        socket.to(admin[roomId]).broadcast.emit('request-to-join',userId,roomId)
-    })
-    socket.on('request-accepted',(userId,roomId)=>{
-        socket.join(roomId)
-        socket.to(roomId).broadcast.emit('user-connected',userId)
-    })
-    socket.on('request-rejected',(userId,roomId)=>{
-        socket.to(userId).broadcast.emit('request-declined')
-    })
+io.on('connection', socket => {
+  const admins = {};
 
-    socket.on('new-message',message=>{
-        io.emit('new-message',message);
-    })
-    socket.on('disconnect', () => {
-        socket.to(roomId).broadcast.emit('user-disconnected', userId)
-      })
-})
+  socket.on('create-room', (userId, roomId) => {
+    socket.join(roomId);
+    admins[roomId] = userId;
+    console.log(`New room created - ${roomId}`);
+  });
 
-server.listen(process.env.PORT,()=>{
-    console.log(`listening to the port ${process.env.PORT}`);
-})
+  socket.on('join-request', (userId, roomId) => {
+    socket.to(roomId).broadcast.emit('request-to-join', userId, roomId);
+  });
+
+  socket.on('request-accepted', (userId, roomId) => {
+    socket.join(roomId);
+    socket.to(roomId).broadcast.emit('user-connected', userId);
+  });
+
+  socket.on('request-rejected', (userId, roomId) => {
+    socket.to(userId).broadcast.emit('request-declined');
+  });
+
+  socket.on('new-message', message => {
+    io.emit('new-message', message);
+  });
+
+  // Handle user disconnection
+  socket.on('disconnect', () => {
+    // Implement your logic here for handling user disconnection
+    // socket.to(roomId).broadcast.emit('user-disconnected', userId);
+  });
+});
+
+const port = 8000;
+server.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
+});
