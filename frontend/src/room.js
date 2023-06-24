@@ -7,24 +7,22 @@ import { useParams } from 'react-router-dom';
 const Room = () => {
   const { RoomId } = useParams();
   const [peers, setPeers] = useState({});
+  const connectToNewUser = (userId, stream) => {
+    const call = myPeer.call(userId, stream);
+    const video = document.createElement('video');
+    call.on('stream', (userVideoStream) => {
+      addVideoStream(video, userVideoStream);
+    });
+    call.on('close', () => {
+      video.remove();
+    });
 
+    setPeers((prevPeers) => ({
+      ...prevPeers,
+      [userId]: call,
+    }));
+  };
   useEffect(() => {
-    const connectToNewUser = (userId, stream) => {
-      const call = myPeer.call(userId, stream);
-      const video = document.createElement('video');
-      call.on('stream', (userVideoStream) => {
-        addVideoStream(video, userVideoStream);
-      });
-      call.on('close', () => {
-        video.remove();
-      });
-
-      setPeers((prevPeers) => ({
-        ...prevPeers,
-        [userId]: call,
-      }));
-    };
-
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
@@ -41,6 +39,7 @@ const Room = () => {
         });
 
         socket.on('user-connected', (userId) => {
+          console.log("a new user connected")
           connectToNewUser(userId, stream);
         });
       })

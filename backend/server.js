@@ -1,21 +1,20 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const { ExpressPeerServer } = require('peer');
 
 const app = express();
 const server = http.createServer(app);
 const io =  socketIO(server, {
   cors: {
-    origin: "https:localhost:3000",
-    allowedHeaders: ["my-custom-header"],
-    credentials: true,
-
+    cors:{
+        origin:"http://localhost:3000",
+        methods: ["GET","POST"]
+    }
   }
 });
-const peerServer = ExpressPeerServer(server, {
-  debug: true
-});
+// const peerServer = ExpressPeerServer(server, {
+//   debug: true
+// });
 
 // app.use((req, res, next) => {
 //   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -25,7 +24,7 @@ const peerServer = ExpressPeerServer(server, {
 // });
 app.use(express.static('../frontend/public'))
 
-app.use('/peerjs', peerServer);
+// app.use('/peerjs', peerServer);
 
 app.get('/:room', (req, res) => {
   const roomId = req.params.room;
@@ -33,26 +32,29 @@ app.get('/:room', (req, res) => {
 });
 
 io.on('connection', socket => {
-  const admins = {};
+//   const admins = {};
 
   socket.on('create-room', (userId, roomId) => {
     socket.join(roomId);
-    admins[roomId] = userId;
+    console.log(roomId)
+    console.log(userId)
+    // admins[roomId] = userId;
+    socket.to(roomId).emit('user-connected', userId)
     console.log(`New room created - ${roomId}`);
   });
 
-  socket.on('join-request', (userId, roomId) => {
-    socket.to(roomId).broadcast.emit('request-to-join', userId, roomId);
-  });
+//   socket.on('join-request', (userId, roomId) => {
+//     socket.to(roomId).broadcast.emit('request-to-join', userId, roomId);
+//   });
 
   socket.on('request-accepted', (userId, roomId) => {
     socket.join(roomId);
     socket.to(roomId).broadcast.emit('user-connected', userId);
   });
 
-  socket.on('request-rejected', (userId, roomId) => {
-    socket.to(userId).broadcast.emit('request-declined');
-  });
+//   socket.on('request-rejected', (userId, roomId) => {
+//     socket.to(userId).broadcast.emit('request-declined');
+//   });
 
   socket.on('new-message', message => {
     io.emit('new-message', message);
