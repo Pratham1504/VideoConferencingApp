@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import  socket  from './socket.js';
-import Peer from "peerjs";
+// import Peer from "peerjs";
+// import {peer} from './myPeer.js';
 
 import { useNavigate } from 'react-router-dom';
 // import myPeer from './myPeer.js';
@@ -10,21 +11,22 @@ const { v4: uuidV4 } = require('uuid')
 
 const Landing = () => {
     const [userId,setUserId] = useState('')
+    // const myPeer=peer()
 // //     useEffect(()=> {
 //         // const myPeer = new Peer();
 //         myPeer.on('open',(id) => {
 //             setUserId(id)
 //         })
 // //     },[])
-const options = {
-    // host: "localhost",
-    // port: 8000,
-    // path: "/peerjs",
-    // debug: true,
-    host: 'localhost',
-    port: '9001',
-    path: '/myapp',
-  };
+// const options = {
+//     // host: "localhost",
+//     // port: 8000,
+//     // path: "/peerjs",
+//     // debug: true,
+//     host: 'localhost',
+//     port: '9001',
+//     path: '/myapp',
+//   };
     
     console.log("hi")
     const navigate = useNavigate()
@@ -33,20 +35,22 @@ const options = {
         console.log("hi2")
         const RoomId = uuidV4()
         console.log(RoomId)
-        const myPeer = new Peer(undefined, options);
-        myPeer.on('open',id =>{
-            console.log("yo")
-            socket.emit('create-room', id, RoomId)
+        // const myPeer = new Peer(undefined, options);
+        // myPeer.on('open',id =>{
+        //     console.log("yo")
+            // socket.emit('create-room', id, RoomId)
             navigate(`/room/${RoomId}`)
-        })
+        // })
     };
     const reqJoin = () => {
             console.log("hi3")
-            const myPeer = new Peer(undefined, options);
-            myPeer.on('open',id =>{
-                socket.emit('request-accepted', userId, roomId)
+            // const myPeer = new Peer(undefined, options);
+            // myPeer.on('open',id =>{
+                
                 navigate(`/room/${roomId}`)
-            })
+                console.log("navigate")
+                
+            // })
             
             // navigate(`/room/${roomId}`)
 

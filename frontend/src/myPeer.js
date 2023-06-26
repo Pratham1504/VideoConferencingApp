@@ -10,5 +10,7 @@ const options = {
   path: '/myapp',
 };
 
-const myPeer = new Peer(undefined, options);
-export default myPeer ;
+const peer = ()=>{
+  return new Peer(undefined, options);
+}
+export {peer} ;

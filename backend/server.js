@@ -34,8 +34,8 @@ app.get('/:room', (req, res) => {
 io.on('connection', socket => {
 //   const admins = {};
 
-  socket.on('create-room', (userId, roomId) => {
-    socket.join(roomId);
+  socket.on('join-room', async (userId, roomId) => {
+    await socket.join(roomId);
     console.log(roomId)
     console.log(userId)
     // admins[roomId] = userId;
@@ -43,13 +43,26 @@ io.on('connection', socket => {
     console.log(`New room created - ${roomId}`);
   });
 
-//   socket.on('join-request', (userId, roomId) => {
-//     socket.to(roomId).broadcast.emit('request-to-join', userId, roomId);
-//   });
+  socket.on('join-request', async (userId, roomId) => {
+    if(!io.sockets.adapter.rooms.get(roomId)){
+      await socket.join(roomId);
+      console.log(socket.id)
+      console.log(io.sockets.adapter.rooms.get(roomId))
+      socket.to(roomId).emit('user-connected', userId)
+    console.log(`New room created - ${roomId} ${userId}`);
+    }else{
+      console.log(`room exists`)
+      socket.to(roomId).emit('request-to-join', userId, roomId);
+    }
+    
+  });
 
-  socket.on('request-accepted', (userId, roomId) => {
-    socket.join(roomId);
-    socket.to(roomId).broadcast.emit('user-connected', userId);
+  socket.on('request-accepted', async (userId, roomId) => {
+    await socket.join(roomId);
+    console.log(socket.id)
+    console.log(io.sockets.adapter.rooms.get(roomId))
+    console.log(`accepted ${userId} ${roomId}`)
+    socket.to(roomId).emit('user-connected', userId);
   });
 
 //   socket.on('request-rejected', (userId, roomId) => {

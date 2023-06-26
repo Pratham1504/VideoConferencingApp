@@ -5,6 +5,7 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "http-proxy-middleware": "^2.0.6",
+    "nodemon": "^2.0.22",
     "peer": "^1.0.0",
     "peerjs": "^1.4.7",
     "socket.io": "^4.7.0",
